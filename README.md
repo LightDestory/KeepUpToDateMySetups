@@ -1,0 +1,4 @@
+# :large_blue_diamond: Kepp Up To Date My Setups
+STILL A PROTOTYPE, A CONCEPT OF WORKING...
+WORK ONLY WITH REVO UNISTALLER
+
