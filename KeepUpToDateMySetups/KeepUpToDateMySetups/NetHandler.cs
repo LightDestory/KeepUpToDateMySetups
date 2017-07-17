@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Windows.Forms;
@@ -9,16 +8,15 @@ namespace KeepUpToDateMySetups
 {
     class NetHandler
     {
-        private volatile bool completed;
+        public bool completed = true;
         private WebClient NetWindow;
         private Software Software;
         private String WorkingPath, CurrentVersion, OnlineVersion;
         private Uri DownloadLink;
         private int[] Scraping;
         private Label Status;
-        private ListBox Log;
 
-        public NetHandler(Label Status, ListBox Log)
+        public NetHandler(Label Status)
         {
             this.Status = Status;
             NetWindow = new WebClient();
@@ -34,26 +32,32 @@ namespace KeepUpToDateMySetups
 
         public void DownloadNew(Software software)
         {
-            Software = software;
-            WorkingPath = Worker.WorkingFolder + Software.Name + "\\";
-            File.WriteAllText(WorkingPath + "version.keepuptodate", GetOnlineVersion());
-            DownloadFile();
+            if (completed)
+            {
+                Software = software;
+                WorkingPath = Worker.WorkingFolder + Software.Name + "\\";
+                File.WriteAllText(WorkingPath + "version.keepuptodate", GetOnlineVersion());
+                DownloadFile();
+            }
         }
 
         public void Update(Software software)
         {
-            Software = software;
-            WorkingPath = Worker.WorkingFolder + Software.Name + "\\";
-            OnlineVersion = GetOnlineVersion();
-            CurrentVersion = File.ReadAllText(WorkingPath + "version.keepuptodate");
-            if (!OnlineVersion.Equals(CurrentVersion))
+            if (completed)
             {
-                File.WriteAllText(WorkingPath + "version.keepuptodate", OnlineVersion);
-                DownloadFile();
-            }
-            else
-            {
-                Status.Text = "No Update Found";
+                Software = software;
+                WorkingPath = Worker.WorkingFolder + Software.Name + "\\";
+                OnlineVersion = GetOnlineVersion();
+                CurrentVersion = File.ReadAllText(WorkingPath + "version.keepuptodate");
+                if (!OnlineVersion.Equals(CurrentVersion))
+                {
+                    File.WriteAllText(WorkingPath + "version.keepuptodate", OnlineVersion);
+                    DownloadFile();
+                }
+                else
+                {
+                    Status.Text = "No Update Found";
+                }
             }
         }
 
@@ -65,7 +69,7 @@ namespace KeepUpToDateMySetups
             Status.Text = "Starting Download of " + Software.Name;
             NetWindow.DownloadFileCompleted += new AsyncCompletedEventHandler(Completed);
             NetWindow.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgress);
-            NetWindow.DownloadFile(DownloadLink, WorkingPath + Software.Name + ".exe");
+            NetWindow.DownloadFileAsync(DownloadLink, WorkingPath + Software.Name + ".exe");
         }
 
         private string GetOnlineVersion()
@@ -86,7 +90,7 @@ namespace KeepUpToDateMySetups
             Directory.Delete(WorkingPath);
         }
 
-        private bool DownloadCompleted { get { return completed; } }
+        public bool DownloadCompleted { get { return completed; } }
 
         private void DownloadProgress(object sender, DownloadProgressChangedEventArgs e)
         {

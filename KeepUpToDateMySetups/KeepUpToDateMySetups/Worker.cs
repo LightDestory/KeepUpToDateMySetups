@@ -2,6 +2,7 @@
 using System.IO;
 using System.Windows.Forms;
 using System;
+using System.Threading;
 
 namespace KeepUpToDateMySetups
 {
@@ -17,7 +18,7 @@ namespace KeepUpToDateMySetups
         public Worker(ListBox Log, Label Status)
         {
             this.Log = Log;
-            Internet = new NetHandler(Status, Log);
+            Internet = new NetHandler(Status);
             UsedPresets = new List<string>();
             AvailablePresets = new List<string>();
             RequestInput = new InputForm();
@@ -56,6 +57,7 @@ namespace KeepUpToDateMySetups
                 UsedPresets.Add(RequestInput.Choose);
                 Directory.CreateDirectory(WorkingFolder + RequestInput.Choose);
                 Internet.DownloadNew(SetupsContainer.GetSoftwareByName(RequestInput.Choose));
+                Logger("Done");
             }
         }
 
@@ -74,6 +76,10 @@ namespace KeepUpToDateMySetups
                 if (Aborted)
                 {
                     break;
+                }
+                while (!Internet.completed)
+                {
+
                 }
                 UpdateSelectedSoftware(s);
             }
